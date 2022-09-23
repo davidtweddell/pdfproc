@@ -13,7 +13,7 @@ import argparse
 # Main Program
 # ==============================================================================
 DEBUG = True
-TEXT_OUTPUT = False
+TEXT_OUTPUT = True
 
 def getargs():
     p = argparse.ArgumentParser()
@@ -36,32 +36,34 @@ for item in the_files:
     # get the root filename and generate an outfile name (if saving to .txt)
     file_root = os.path.splitext(item)[0]
     bn = os.path.basename(item)
+    bb = os.path.splitext(bn)[0]
 
     # open the file and make a pdftotext.PDF object
     try:
         with open(item, "rb") as f:
             pdf = pdftotext.PDF(f)
     except IOError:
-        print("could not read file {0}".format(fn))
+        print(f"could not read file {f}")
 
     if DEBUG:
-        print("Document {0} has {1} page(s).".format(bn,len(pdf)))
+        print(f"Document {bn} has {len(pdf)} page(s).")
 
     # add the text representation to the list
     for i, page in enumerate(pdf):
         the_text.append(page)
         the_source.append(bn)
-        the_pageid.append('{0}-{1}'.format(bn,i+1))
+        the_pageid.append(f'{bn}-{i}')
 
     # save as a text file
     if TEXT_OUTPUT:
-        of = "{0}.txt".format(file_root)
+        of = f"converted-{bb}.txt"
         try:
             with open(of, "w") as f:
                 f.write("\n\n".join(pdf))
         except IOError:
             print("could not write to {0}".format(of))
 
+        print(f"Document {bn} was converted to text file {of}.")
 
 # convert to a dataframe and write out
 df = pd.DataFrame()
@@ -71,6 +73,6 @@ df["SUMMARY"] = the_text
 
 
 # TODO: better file name??
-output_file = "./text_from_pdf.csv"
+output_file = f"converted-{bb}.csv"
 df.to_csv(output_file, index=False)
-print("Corpus consists of {0} texts written to file {1}.".format(len(the_text), output_file))
+print(f"Corpus consists of {len(the_text)} texts written to file {output_file}.")
